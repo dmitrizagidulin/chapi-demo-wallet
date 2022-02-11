@@ -18,9 +18,8 @@
   ],
   "name": "Demo Wallet",
   "short_name": "Demo Wallet",
-  "start_url": "./index.html",
-  "id": "/index.html",
-  "scope": "/",
+  "start_url": ".",
+  "id": "index.html",
   "background_color": "#fff",
   "display": "standalone",
   "credential_handler": {
