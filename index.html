@@ -4,6 +4,10 @@
   <title>Minimal Demo Wallet</title>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link rel="shortcut icon" href="favicon.ico">
+
+  <link rel="manifest" href="manifest.json">
+
   <!--Import Google Icon Font-->
   <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
 
@@ -52,6 +56,10 @@
       </p>
       <a class="waves-effect waves-light btn" id="loginButton">Login</a>
     </div>
+    <div class="card-panel hide" id="install-card">
+      <a class="waves-effect waves-light btn" id="install">Install</a>
+    </div>
+  </div>
   </div>
 </div>
 
@@ -60,15 +68,57 @@
 
   // Registers this demo wallet with the current user's browser,
   // from install-wallet.js
-  registerWalletWithBrowser()
-    .catch(e => console.error('Error in registerWalletWithBrowser:', e));
+  // registerWalletWithBrowser()
+  //   .catch(e => console.error('Error in registerWalletWithBrowser:', e));
 
   // Set up the UI / button events.
   // `onDocumentReady` helper function is defined in ./js-helpers.js
   onDocumentReady(() => {
+    if ('serviceWorker' in navigator) {
+      // Register a service worker hosted at the root of the
+      // site using the default scope.
+      navigator.serviceWorker.register('pwa-service-worker.js')
+        .then((registration) => {
+          console.log('Service worker registration succeeded:', registration);
+        })
+        .catch(error => {
+          console.log('Service worker registration failed:', error);
+        });
+    } else {
+      console.log('Service workers are not supported.');
+    }
+
     document.getElementById('loginButton').addEventListener('click', login);
     document.getElementById('logoutButton').addEventListener('click', logout);
     refreshUserArea();
+  });
+
+  window.addEventListener('beforeinstallprompt', (e) => {
+    // Prevent Chrome 67 and earlier from automatically showing the prompt
+    // e.preventDefault();
+    // Stash the event so it can be triggered later.
+    deferredPrompt = e;
+
+    const installBtn = document.querySelector('#install');
+
+    // Update UI to notify the user they can add to home screen
+    document.getElementById('install-card').classList.remove('hide');
+
+    installBtn.addEventListener('click', (e) => {
+      // hide our user interface that shows our A2HS button
+      installBtn.style.display = 'none';
+      // Show the prompt
+      deferredPrompt.prompt();
+      // Wait for the user to respond to the prompt
+      deferredPrompt.userChoice.then((choiceResult) => {
+        if (choiceResult.outcome === 'accepted') {
+          console.log('User accepted the A2HS prompt');
+        } else {
+          console.log('User dismissed the A2HS prompt');
+        }
+        deferredPrompt = null;
+      });
+    });
   });
 </script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
